@@ -374,11 +374,12 @@ def domain_randomize(
             actuator_acc0=body_mass_attr_range["actuator_acc0"][: rng.shape[0]]
         )
 
+
     in_axes = jax.tree.map(lambda x: None, sys)
     in_axes = in_axes.tree_replace(in_axes_dict)
     sys = sys.tree_replace(sys_dict)
 
-    return sys, in_axes
+    return sys, in_axes, None
 
 
 def train(

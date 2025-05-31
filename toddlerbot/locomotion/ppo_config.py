@@ -23,7 +23,7 @@ class PPOConfig:
     entropy_cost: float = 5e-4
     clipping_epsilon: float = 0.2
     num_envs: int = 1024
-    render_interval: int = 50
+    render_interval: int = 500
     batch_size: int = 256
     num_minibatches: int = 4
     seed: int = 0
