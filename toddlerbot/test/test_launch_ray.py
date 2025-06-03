@@ -49,12 +49,25 @@ if not os.path.exists(xml_path):
                 <site name="ray_origin_vis" type="sphere" size="0.02" rgba="1 1 0 0.8" pos="0 0 -0.1"/>
                 <!-- Sites for visualization -->
                 <site name="ball_local_y_marker" type="box" size="0.01 0.1 0.01" pos="0 0.11 0" rgba="0 1 1 0.5"/> <!-- 标记球的局部+Y方向 -->
+                <site name="ray_hit_vis_0" type="sphere" size="0.01" rgba="1 0 1 0.7"/>
+                <site name="ray_hit_vis_1" type="sphere" size="0.01" rgba="1 0 1 0.7"/>
+                <site name="ray_hit_vis_2" type="sphere" size="0.01" rgba="1 0 1 0.7"/>
+                <site name="ray_hit_vis_3" type="sphere" size="0.01" rgba="1 0 1 0.7"/>
+                <site name="ray_hit_vis_4" type="sphere" size="0.01" rgba="1 0 1 0.7"/>
+                <site name="ray_hit_vis_5" type="sphere" size="0.01" rgba="1 0 1 0.7"/>
+                <site name="ray_hit_vis_6" type="sphere" size="0.01" rgba="1 0 1 0.7"/>
+                <site name="ray_hit_vis_7" type="sphere" size="0.01" rgba="1 0 1 0.7"/>
+                <site name="ray_hit_vis_8" type="sphere" size="0.01" rgba="1 0 1 0.7"/>
+                <site name="ray_hit_vis_9" type="sphere" size="0.01" rgba="1 0 1 0.7"/>
+                <site name="ray_hit_vis_10" type="sphere" size="0.01" rgba="1 0 1 0.7"/>
+                <site name="ray_hit_vis_11" type="sphere" size="0.01" rgba="1 0 1 0.7"/>
+                <site name="ray_hit_vis_12" type="sphere" size="0.01" rgba="1 0 1 0.7"/>
+                <site name="ray_hit_vis_13" type="sphere" size="0.01" rgba="1 0 1 0.7"/>
 
             </body>
         </worldbody>
         <!-- 可选: 添加用于可视化射线击中点的site -->
         <!--
-        <site name="ray_hit_vis_0" type="sphere" size="0.01" rgba="1 0 1 0.7"/>
         ...
         -->
     </mujoco>
@@ -91,7 +104,7 @@ num_rays = 11
 scan_angle_start_deg = 0.0
 scan_angle_end_deg = 180.0
 
-offset_from_surface = 0.03
+offset_from_surface = 0.02
 ray_length_on_miss = 1.0
 
 # --- 可视化 ---
@@ -161,11 +174,12 @@ with mujoco.viewer.launch_passive(model, data) as viewer:
         local_origin_offset = np.array([0, 0, -(ball_radius + offset_from_surface)])
         pnt_world_origin = ball_center_world + ball_rotation_matrix_world @ local_origin_offset
         
-        if ray_origin_vis_id != -1:
-            data.site_xpos[ray_origin_vis_id] = pnt_world_origin
 
         hit_details = []
 
+        mujoco.mj_step(model, data)
+        frame_count_interval += 1
+        
         for i, angle_rad in enumerate(scan_angles_rad):
             # 射线方向在球体的局部YZ平面内定义:
             # angle_rad = 0 (0 deg): 指向局部-Y (左) -> [0, -1, 0] in local frame
@@ -216,6 +230,7 @@ with mujoco.viewer.launch_passive(model, data) as viewer:
                 "distance": actual_hit_distance,
             })
 
+            #打印激光雷达的投射点阵（紫色）
             if i < len(ray_hit_vis_site_ids):
                 site_to_update_id = ray_hit_vis_site_ids[i]
                 if hit:
@@ -223,9 +238,10 @@ with mujoco.viewer.launch_passive(model, data) as viewer:
                     data.site_xpos[site_to_update_id] = intersection_point
                 else:
                     data.site_xpos[site_to_update_id] = pnt_world_origin + vec_world_normalized * ray_length_on_miss
-
-        mujoco.mj_step(model, data)
-        frame_count_interval += 1
+ 
+        #更新投射点原点
+        if ray_origin_vis_id != -1:
+            data.site_xpos[ray_origin_vis_id] = pnt_world_origin
 
         elapsed_sim_time_total = data.time
         elapsed_wall_time_total = time.time() - loop_start_wall_time
